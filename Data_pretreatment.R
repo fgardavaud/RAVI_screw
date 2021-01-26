@@ -174,6 +174,9 @@ Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number 
 # 
 
 
+write.xlsx(Study_data_selected_exam, 'output/Study_data.xlsx', sheetName = "Study_data",
+           col.names = TRUE, row.names = TRUE, append = FALSE)
+
 ################## Global environment cleaning ###########################
 
 # Remove dataframe which don't still have any interest
