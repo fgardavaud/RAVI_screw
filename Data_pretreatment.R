@@ -160,9 +160,13 @@ Study_data_selected_age$Total.Fluoro.DAP..mGy.cm.. <- as.numeric(Study_data_sele
 ############### retrieve study patient lines #################
 
 # add a filter to exam description
-Study_data_selected_exam <- Study_data_selected_age %>% filter(Standard.study.description == "CIMENTOPLASTIE" |
-                                                                 Standard.study.description == "OSTEO BASSIN" | Standard.study.description == "OSTEOSYNTHESE BASSIN" |
-                                                                 Standard.study.description == "VERTEBROPLASTIE") 
+Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number == 30034736552 |
+                                                                 Accession.number == 30034706684 | Accession.number == 30036882385 |
+                                                                 Accession.number == 30037056758 | Accession.number == 30037489080 |
+                                                                 Accession.number == 30039018501 | Accession.number == 30039041448 |
+                                                                 Accession.number == 30039759054 | Accession.number == 30040086237 |
+                                                                 Accession.number == 30039759054 | Accession.number == 30040362160 |
+                                                                 Accession.number == 30040182895) 
 # # add a filter to patient name
 # Study_data_selected_exam <- Study_data_selected_age %>% filter(Standard.study.description == "CIMENTOPLASTIE" |
 #                                                                  Standard.study.description == "OSTEO BASSIN" | Standard.study.description == "OSTEOSYNTHESE BASSIN" |
