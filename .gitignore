@@ -30,3 +30,4 @@ vignettes/*.pdf
 *.DS_Store
 # data folder with examination data
 data/*
+ouput/*
