@@ -1,12 +1,13 @@
 ######################################################################
 ##                                                                  ##                                  
-##                      Mammo comparison study                      ##
-##                    to compare WIQ with Dose data                 ##
+##              Screw study to analyze dose following               ##
+##                    screw incidence and duration                  ##
+##                                                                  ##
 ##                                                                  ##                                 
 ######################################################################
 
 # created by François Gardavaud
-# date : 01/26/2021
+# date : 02/22/2021
 
 ###################### set-up environment section ################################
 
@@ -84,21 +85,28 @@ if(!require(prettyR)){
 # BY CONVERTING ORIGINAL DATA FROM .XLSX TO .CSV IN EXCEL SOFTWARE
 # /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
 
-tic("to import mammo patient data in Rstudio")
-if(exists("my_all_data")){
+tic("to import interventionnal patient data in Rstudio")
+if(exists("DoseWatch_export")){
   print("raw data importation have already done")
 }else{
-  DoseWatch_export <- read.csv2("data/CV-IR_Tenon_Radiologie_detailed_data_export.csv", sep = ";")
+  # /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+  # The first following line is deprecated as DoseWatch export file format has changed with first lines added with no values and characters terms.
+  # /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+  #DoseWatch_export <- read.csv2("data/CV-IR_Tenon_Radiologie_detailed_data_export.csv", sep = ";") 
   
+  # operations to correctly read DoseWatch export file *NEW* format
+  all_content = readLines("data/Interventional_Tenon_Radiologie_detailed_data_export.csv") # to read the whole file
+  skip_content = all_content[-c(1,2,3)] # to suppress the first 3 rows with bad value yield to bad header with read.csv2 function
+  DoseWatch_export <- read.csv2(textConnection(skip_content), sep = ";")
 }
 toc()
 
 ################################## data tailoring section ##################################
 # data filter to keep only interested columns for this study
-DoseWatch_Selected_data <- DoseWatch_export %>% select(Study.date..YYYY.MM.DD., Accession.number,
+DoseWatch_Selected_data <- DoseWatch_export %>% select(Study.date..YYYY.MM.DD., Series.Time, Accession.number,
                                                        Patient.birthdate..YYYY.MM.DD.,
                                                        Patient.weight..kg., Patient.size..cm.,
-                                                       BMI, Standard.study.description, Performing.physician.last.name,
+                                                       BMI, Standard.study.description,
                                                        Peak.Skin.Dose..mGy.,
                                                        Image.and.Fluoroscopy.Dose.Area.Product..mGy.cm2.,
                                                        Total.Acquisition.DAP..mGy.cm..,Total.Fluoro.DAP..mGy.cm..,
@@ -109,14 +117,21 @@ DoseWatch_Selected_data <- DoseWatch_export %>% select(Study.date..YYYY.MM.DD., 
                                                        Positioner.Primary.Angle..deg., Positioner.Secondary.Angle..deg.,
                                                        Field.of.View..cm.) # to select column of interest and keeping the column's name
 
-######################## age patient computation #################################
+# convert Series.time, Patient Birthdate and Study date  columns in right time format
+DoseWatch_Selected_data <- DoseWatch_Selected_data %>%
+  mutate(Series.Time = hm(Series.Time), Patient.birthdate..YYYY.MM.DD. = ymd_hms(Patient.birthdate..YYYY.MM.DD.),
+         Study.date..YYYY.MM.DD. = as.POSIXct(Study.date..YYYY.MM.DD.))
 
+# sort each line by Accession number and then by acquisition hour
+DoseWatch_Selected_data <- arrange(DoseWatch_Selected_data, Accession.number)#, Series.Time)
+
+######################## age patient computation #################################
 #  instance null vector with appropriate dimension to bind with Study_data
 Patient.Age <- rep(0, nrow(DoseWatch_Selected_data))
 
 # Loop with parallelization to calculate patient age in years 
 # and add this information to Study_data dataframe
-# also have a condition to test global environement objet for debugging
+# also have a condition to test global environment object for debugging
 tic("for loop with parallelization")
 if(exists("Study_data_age")){
   print("patient age computation have already done")
@@ -124,9 +139,10 @@ if(exists("Study_data_age")){
   cores <- detectCores()
   registerDoMC(cores - 1)
   Patient.Age <- foreach(i = 1:nrow(DoseWatch_Selected_data)) %dopar% {
-    naiss = ymd_hms(DoseWatch_Selected_data[i,3])
-    evt = as.POSIXct(DoseWatch_Selected_data[i,1])
-    age = as.period(interval(naiss, evt))@year
+    #naiss = ymd_hms(DoseWatch_Selected_data[i,4]) # deprecated line as mutate function can convert easily "time" column
+    #evt = as.POSIXct(DoseWatch_Selected_data[i,1]) # deprecated line as mutate function can convert easily "time" column
+    # by suppressing those 2 previous lines and use mutate function instead => Computing acceleration by a factor 6 !!!!!!
+    age = as.period(interval(DoseWatch_Selected_data[i,4], DoseWatch_Selected_data[i,1]))@year
     Patient.Age <- age
   }
 }
@@ -135,10 +151,11 @@ toc()
 Patient.Age <- as.character(Patient.Age)
 Study_data_age <-cbind(DoseWatch_Selected_data,Patient.Age)
 
-Study_data_selected_age <- Study_data_age %>% select(Study.date..YYYY.MM.DD., Accession.number,
+Study_data_selected_age <- Study_data_age %>% select(Study.date..YYYY.MM.DD., Series.Time, Accession.number,
                                                      Patient.Age,
+                                                     Patient.birthdate..YYYY.MM.DD.,
                                                      Patient.weight..kg., Patient.size..cm.,
-                                                     BMI, Standard.study.description, Performing.physician.last.name,
+                                                     BMI, Standard.study.description,
                                                      Peak.Skin.Dose..mGy.,
                                                      Image.and.Fluoroscopy.Dose.Area.Product..mGy.cm2.,
                                                      Total.Acquisition.DAP..mGy.cm..,Total.Fluoro.DAP..mGy.cm..,
@@ -148,8 +165,6 @@ Study_data_selected_age <- Study_data_age %>% select(Study.date..YYYY.MM.DD., Ac
                                                      Irradiation.Event.Type,Proprietary.Type, Dose.Preference,
                                                      Positioner.Primary.Angle..deg., Positioner.Secondary.Angle..deg.,
                                                      Field.of.View..cm.)
-
-
 
 ############### column format conversion #################
 # convert patient years in numeric
@@ -167,22 +182,17 @@ Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number 
                                                                  Accession.number == 30039759054 | Accession.number == 30040086237 |
                                                                  Accession.number == 30039759054 | Accession.number == 30040362160 |
                                                                  Accession.number == 30040182895) 
-# # add a filter to patient name
-# Study_data_selected_exam <- Study_data_selected_age %>% filter(Standard.study.description == "CIMENTOPLASTIE" |
-#                                                                  Standard.study.description == "OSTEO BASSIN" | Standard.study.description == "OSTEOSYNTHESE BASSIN" |
-#                                                                  Standard.study.description == "VERTEBROPLASTIE") 
-# 
 
 
 write.xlsx(Study_data_selected_exam, 'output/Study_data.xlsx', sheetName = "Study_data",
-           col.names = TRUE, row.names = TRUE, append = FALSE)
+           col.names = TRUE, row.names = FALSE, append = FALSE) # row.names = FALSE to avoid first column with index numbers
 
 ################## Global environment cleaning ###########################
 
 # Remove dataframe which don't still have any interest
 if(exists("Patient.Age")) {
   print("Global environment will be clean")
-  rm (Patient.Age, DoseWatch_Selected_data, Study_data_selected_age)
+  rm (Patient.Age, DoseWatch_Selected_data, Study_data_selected_age, all_content, skip_content)
 }else{
   print("Global environment already clean")
 }
