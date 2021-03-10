@@ -7,7 +7,7 @@
 ######################################################################
 
 # created by François Gardavaud
-# date : 02/22/2021
+# date : 03/10/2021
 
 ###################### set-up environment section ################################
 
@@ -103,7 +103,7 @@ toc()
 
 ################################## data tailoring section ##################################
 # data filter to keep only interested columns for this study
-DoseWatch_Selected_data <- DoseWatch_export %>% select(Study.date..YYYY.MM.DD., Series.Time, Accession.number,
+DoseWatch_Selected_data <- DoseWatch_export %>% select(Study.date..YYYY.MM.DD., Series.Time, Patient.ID, Accession.number,
                                                        Patient.birthdate..YYYY.MM.DD.,
                                                        Patient.weight..kg., Patient.size..cm.,
                                                        BMI, Standard.study.description,
@@ -123,7 +123,7 @@ DoseWatch_Selected_data <- DoseWatch_Selected_data %>%
          Study.date..YYYY.MM.DD. = as.POSIXct(Study.date..YYYY.MM.DD.))
 
 # sort each line by Accession number and then by acquisition hour
-DoseWatch_Selected_data <- arrange(DoseWatch_Selected_data, Accession.number)#, Series.Time)
+DoseWatch_Selected_data <- arrange(DoseWatch_Selected_data, Accession.number, Series.Time)
 
 ######################## age patient computation #################################
 #  instance null vector with appropriate dimension to bind with Study_data
@@ -142,7 +142,7 @@ if(exists("Study_data_age")){
     #naiss = ymd_hms(DoseWatch_Selected_data[i,4]) # deprecated line as mutate function can convert easily "time" column
     #evt = as.POSIXct(DoseWatch_Selected_data[i,1]) # deprecated line as mutate function can convert easily "time" column
     # by suppressing those 2 previous lines and use mutate function instead => Computing acceleration by a factor 6 !!!!!!
-    age = as.period(interval(DoseWatch_Selected_data[i,4], DoseWatch_Selected_data[i,1]))@year
+    age = as.period(interval(DoseWatch_Selected_data[i,5], DoseWatch_Selected_data[i,1]))@year
     Patient.Age <- age
   }
 }
@@ -151,7 +151,7 @@ toc()
 Patient.Age <- as.character(Patient.Age)
 Study_data_age <-cbind(DoseWatch_Selected_data,Patient.Age)
 
-Study_data_selected_age <- Study_data_age %>% select(Study.date..YYYY.MM.DD., Series.Time, Accession.number,
+Study_data_selected_age <- Study_data_age %>% select(Study.date..YYYY.MM.DD., Series.Time, Patient.ID, Accession.number,
                                                      Patient.Age,
                                                      Patient.birthdate..YYYY.MM.DD.,
                                                      Patient.weight..kg., Patient.size..cm.,
@@ -174,16 +174,27 @@ Study_data_selected_age$Total.Fluoro.DAP..mGy.cm.. <- as.numeric(Study_data_sele
 
 ############### retrieve study patient lines #################
 
-# add a filter to exam description
+# add a filter to choose dedicated exam for this study
 Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number == 30034736552 |
                                                                  Accession.number == 30034706684 | Accession.number == 30036882385 |
                                                                  Accession.number == 30037056758 | Accession.number == 30037489080 |
                                                                  Accession.number == 30039018501 | Accession.number == 30039041448 |
                                                                  Accession.number == 30039759054 | Accession.number == 30040086237 |
-                                                                 Accession.number == 30039759054 | Accession.number == 30040362160 |
-                                                                 Accession.number == 30040182895) 
+                                                                 Accession.number == 30040362160 | Accession.number == 30040182895 |
+                                                                 Accession.number == 30041139556 | Accession.number == 30041839654 |
+                                                                 Accession.number == 30042281874 | Accession.number == 30043223051 |
+                                                                 Patient.ID == 8002206555) 
+
+############### Compute Exam duration #################
+
+# faire une boucle sur les patients puis sur l'heure d'acquisition 
+Study_data_selected_exam[10,2] - Study_data_selected_exam[1,2]
 
 
+
+
+
+############### generate output Excel file for other users in this study #################
 write.xlsx(Study_data_selected_exam, 'output/Study_data.xlsx', sheetName = "Study_data",
            col.names = TRUE, row.names = FALSE, append = FALSE) # row.names = FALSE to avoid first column with index numbers
 
@@ -212,7 +223,7 @@ if(exists("Patient.Age")) {
 ##########################################################################
 ##########################################################################
 
-Global_stat <- summary(Patient_merge_data_all_source_selected)
+Global_stat <- summary(Study_data_selected_exam)
 write.xlsx(Global_stat, 'output/Global_stat.xlsx', sheetName = "Global_stat",
            col.names = TRUE, row.names = TRUE, append = FALSE)
 
