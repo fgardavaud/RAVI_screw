@@ -7,7 +7,7 @@
 ######################################################################
 
 # created by François Gardavaud
-# date : 03/10/2021
+# date : 03/11/2021
 
 ###################### set-up environment section ################################
 
@@ -36,11 +36,6 @@ if(!require(foreach)){
   install.packages("foreach")
   library(foreach)
 }
-# load doparallel package to implement parallel computing
-# if(!require(doParallel)){
-#   install.packages("doParallel")
-#   library(doParallel)
-# }
 # load tictoc package to measure running time of R code
 if(!require(tictoc)){
   install.packages("tictoc")
@@ -51,17 +46,17 @@ if(!require(openxlsx)){
   install.packages("openxlsx")
   library(openxlsx)
 }
-# load dplyr for data handling
-if(!require(dplyr)){
-  install.packages("dplyr")
-  library(dplyr)
+# load tidyverse for data science such as data handling and visualization
+if(!require(tidyverse)){
+  install.packages("tidyverse")
+  library(tidyverse)
 }
 # load prettyR package for better statistical analysis
 if(!require(prettyR)){
   install.packages("prettyR")
   library(prettyR)
 }
-# # load sulmarytoolspackage for better table output
+# # load summarytools package for better table output
 # if(!require(summarytools)){
 #   install.packages("summarytools")
 #   library(summarytools)
@@ -69,7 +64,7 @@ if(!require(prettyR)){
 
 ###############################################################################################################
 ###############################################################################################################
-####################### First part : Match patient IPP between PACS and anapath file ##########################
+######################### First part : data pre-treatment #####################################################
 ###############################################################################################################
 ###############################################################################################################
 
@@ -187,15 +182,53 @@ Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number 
 
 ############### Compute Exam duration #################
 
-# faire une boucle sur les patients puis sur l'heure d'acquisition 
-Study_data_selected_exam[10,2] - Study_data_selected_exam[1,2]
+#create a data frame with only the first and last row for each Accession number
+Study_data_selected_exam_duration <- Study_data_selected_exam %>% 
+  group_by(Accession.number) %>%
+  slice(c(1, n())) %>% # select only the first and last row for each group value.
+  mutate (Series.Time.Minute = hour(Series.Time)*60 + minute(Series.Time)) %>% # convert Series.Time in minutes
+  ungroup()
 
 
 
+#add two columns with time difference between first and second row for each exam in hour and in minute.
+Study_data_selected_exam_duration <- Study_data_selected_exam_duration %>% 
+  group_by(Accession.number) %>%
+  dplyr::mutate(
+    Exam.duration.Hour = (dplyr::last(Series.Time) - dplyr::first(Series.Time)),
+    Exam.duration.Minute = (dplyr::last(Series.Time.Minute) - dplyr::first(Series.Time.Minute))
+  )
 
+# suppress unnecessary column in order to merge data in one dataframe
+Study_data_selected_exam_duration_filtered <- Study_data_selected_exam_duration %>% select(Accession.number, Exam.duration.Hour, Exam.duration.Minute)
+# Remove duplicates based on Accession number
+Study_data_selected_exam_duration_filtered <- Study_data_selected_exam_duration_filtered[!duplicated(Study_data_selected_exam_duration_filtered$Accession.number), ] # to keep only one row for each exam time.
 
+# merge data between big dataframe and dataframe with only exam duration
+Study_data_selected_exam_with_duration <- merge(Study_data_selected_exam , Study_data_selected_exam_duration_filtered, by.x = "Accession.number", by.y = "Accession.number")
+# sort each line by Accession number and then by acquisition hour
+Study_data_selected_exam_with_duration <- arrange(Study_data_selected_exam_with_duration, Accession.number, Series.Time)
+
+# Remove duplicates in order to have only one row by exam
+Study_data_selected_exam_with_duration_without_duplicates <- Study_data_selected_exam_with_duration[!duplicated(Study_data_selected_exam_with_duration$Accession.number), ] # to keep only one row for each exam time.
+# to select only row that not depends on sequence parameters
+Study_data_selected_exam_with_duration_without_duplicates <- Study_data_selected_exam_with_duration_without_duplicates %>% select(Study.date..YYYY.MM.DD., Patient.ID, Accession.number,
+                                                                                                                                  Patient.Age,
+                                                                                                                                  Patient.birthdate..YYYY.MM.DD.,
+                                                                                                                                  Patient.weight..kg., Patient.size..cm.,
+                                                                                                                                  BMI, Standard.study.description,
+                                                                                                                                  Peak.Skin.Dose..mGy.,
+                                                                                                                                  Image.and.Fluoroscopy.Dose.Area.Product..mGy.cm2.,
+                                                                                                                                  Total.Acquisition.DAP..mGy.cm..,Total.Fluoro.DAP..mGy.cm..,
+                                                                                                                                  Total.Air.Kerma..mGy.,
+                                                                                                                                  Total.Acquisition.Air.Kerma..mGy., Total.Fluoro.Air.Kerma..mGy.,
+                                                                                                                                  Total.Time.of.Fluoroscopy..s., Number.of.Acquisition.Series,
+                                                                                                                                  Exam.duration.Hour, Exam.duration.Minute)
+                                                                                                                                  
 ############### generate output Excel file for other users in this study #################
-write.xlsx(Study_data_selected_exam, 'output/Study_data.xlsx', sheetName = "Study_data",
+write.xlsx(Study_data_selected_exam_with_duration, 'output/Study_data_detailed.xlsx', sheetName = "Study_data_detailed",
+           col.names = TRUE, row.names = FALSE, append = FALSE) # row.names = FALSE to avoid first column with index numbers
+write.xlsx(Study_data_selected_exam_with_duration_without_duplicates, 'output/Study_data_general.xlsx', sheetName = "Study_data_general",
            col.names = TRUE, row.names = FALSE, append = FALSE) # row.names = FALSE to avoid first column with index numbers
 
 ################## Global environment cleaning ###########################
