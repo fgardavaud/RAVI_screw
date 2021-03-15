@@ -48,17 +48,6 @@ if(!require(tidyverse)){
   library(tidyverse)
 }
 
-# # load prettyR package for better statistical analysis
-# if(!require(prettyR)){
-#   install.packages("prettyR")
-#   library(prettyR)
-# }
-# # load summarytools package for better table output
-# if(!require(summarytools)){
-#   install.packages("summarytools")
-#   library(summarytools)
-# }
-
 ###############################################################################################################
 ###############################################################################################################
 ######################### First part : data pre-treatment #####################################################
@@ -68,8 +57,6 @@ if(!require(tidyverse)){
 
 
 ############################### data import section ##################################
-# read the database with data frame existing test
-# my_all_data <- read_excel("data/CV-IR_Tenon_Radiologie_detailed_data_export_tronque.xlsx")
 
 ## /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
 # unfortunately Excel importation yield to parse errors in date data for instance.
@@ -82,11 +69,12 @@ if(exists("DoseWatch_export")){
   print("raw data importation have already done")
 }else{
   # /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
-  # The first following line is deprecated as DoseWatch export file format has changed with first lines added with no values and characters terms.
+  # The first following line is deprecated as DoseWatch export file format has changed in v3.2.3 with first lines added with no values and characters terms.
   # /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
-  #DoseWatch_export <- read.csv2("data/CV-IR_Tenon_Radiologie_detailed_data_export.csv", sep = ";") 
+  #DoseWatch_export <- read.csv2("data/CV-IR_Tenon_Radiologie_detailed_data_export.csv", sep = ";")
   
-  # operations to correctly read DoseWatch export file *NEW* format
+  # operations to correctly read DoseWatch export file *NEW* format only for DoseWatch v3.2.3 and above.
+  # if you have DoseWatch v3.1 or under comment the three following lines and uncomment the last previous command line.
   all_content = readLines("data/Interventional_Tenon_Radiologie_detailed_data_export.csv") # to read the whole file
   skip_content = all_content[-c(1,2,3)] # to suppress the first 3 rows with bad value yield to bad header with read.csv2 function
   DoseWatch_export <- read.csv2(textConnection(skip_content), sep = ";")
@@ -222,7 +210,7 @@ Study_data_selected_exam_with_duration_without_duplicates <- Study_data_selected
                                                                                                                                   Total.Time.of.Fluoroscopy..s., Number.of.Acquisition.Series,
                                                                                                                                   Exam.duration.Hour, Exam.duration.Minute)
                                                                                                                                   
-############### generate output Excel file for other users in this study #################
+############### generate output Excel file to perform statistical analysis in another environment #################
 write.xlsx(Study_data_selected_exam_with_duration, 'output/Study_data_detailed.xlsx', sheetName = "Study_data_detailed",
            col.names = TRUE, row.names = FALSE, append = FALSE) # row.names = FALSE to avoid first column with index numbers
 write.xlsx(Study_data_selected_exam_with_duration_without_duplicates, 'output/Study_data_general.xlsx', sheetName = "Study_data_general",
