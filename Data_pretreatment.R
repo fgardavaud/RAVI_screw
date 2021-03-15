@@ -1,24 +1,22 @@
 ######################################################################
 ##                                                                  ##                                  
-##              Screw study to analyze dose following               ##
-##                    screw incidence and duration                  ##
+##  Cone-beam computed tomography navigation software too perform   ##
+##      percutaneous screw fixation of coxal bone metastases:       ##
+##   an evaluation of feasibility, safety and outcomes in case of   ##
+##                      steep angulation                            ##
 ##                                                                  ##
 ##                                                                  ##                                 
 ######################################################################
 
-# created by François Gardavaud
-# date : 03/11/2021
+# created by François Gardavaud, MPE, M.Sc. Medical imaging department - Tenon University Hopistal
+# date of creation : 02/22/2021
+# last review : 03/15/2021
+# project lead by Pr. François Cornelis, MD, PhD. Medical imaging department - Tenon University Hopistal
 
 ###################### set-up environment section ################################
 
 # Set the project path to the root level -
 root.dir = rprojroot::find_rstudio_root_file()
-
-# # load readxl package to read easyly Excel file with an install condition
-# if(!require(readxl)){
-#   install.packages("readxl")
-#   library(readxl)
-# }
 
 # load lubridate package to determine patient age from birthdate with an install condition
 if(!require(lubridate)){
@@ -31,31 +29,30 @@ if(!require(doMC)){
   install.packages("doMC")
   library(doMC)
 }
-# load foreach package for parallel computing on for loop
-if(!require(foreach)){
-  install.packages("foreach")
-  library(foreach)
-}
+
 # load tictoc package to measure running time of R code
 if(!require(tictoc)){
   install.packages("tictoc")
   library(tictoc)
 }
+
 # load excel package to write results in Excel file
 if(!require(openxlsx)){
   install.packages("openxlsx")
   library(openxlsx)
 }
+
 # load tidyverse for data science such as data handling and visualization
 if(!require(tidyverse)){
   install.packages("tidyverse")
   library(tidyverse)
 }
-# load prettyR package for better statistical analysis
-if(!require(prettyR)){
-  install.packages("prettyR")
-  library(prettyR)
-}
+
+# # load prettyR package for better statistical analysis
+# if(!require(prettyR)){
+#   install.packages("prettyR")
+#   library(prettyR)
+# }
 # # load summarytools package for better table output
 # if(!require(summarytools)){
 #   install.packages("summarytools")
@@ -242,41 +239,7 @@ if(exists("Patient.Age")) {
 }
 
 
-###############################################################################################################
-###############################################################################################################
-############# Second part : Bin data to express dose in function to angle #####################################
-###############################################################################################################
-###############################################################################################################
 
-##########################################################################
-##########################################################################
-##########################################################################
-######################## Some statistics #################################
-##########################################################################
-##########################################################################
-##########################################################################
-
-Global_stat <- summary(Study_data_selected_exam)
-write.xlsx(Global_stat, 'output/Global_stat.xlsx', sheetName = "Global_stat",
-           col.names = TRUE, row.names = TRUE, append = FALSE)
-
-# Global_stat_test <- describe(Patient_merge_data_all_source_selected, num.desc=c("mean","median","sd","min","max","valid.n"))
-# write.xlsx(Global_stat_test, 'output/Global_stat_test.xlsx', sheetName = "Global_stat_test",
-#           col.names = TRUE, row.names = TRUE, append = FALSE)
-
-
-Tomo.Number <- length(Patient_merge_data_all_source$Infos.suppl)
-ExamAET.stat <- Patient_merge_data_all_source %>%
-  group_by(AE.source) %>%
-  summarise(
-    count = n(),
-  )
-write.xlsx(ExamAET.stat, 'output/ExamAET.stat.xlsx', sheetName = "ExamAET.stat",
-           col.names = TRUE, row.names = TRUE, append = FALSE)
-
-# CBCT_position <- which(Study_data_prostate$Irradiation.Event.Type == "CBCT+")
-# Exam_ID_list_CBCT <- table(Study_data_prostate_CBCT$Study_data_prostate_CBCT.Accession.number, droplevels(Study_data_prostate_CBCT$Study_data_prostate_CBCT.Irradiation.Event.Type))
-# Study_data_prostate_CBCT <- subset(Study_data_prostate, Irradiation.Event.Type == "CBCT+")
 
 
 
