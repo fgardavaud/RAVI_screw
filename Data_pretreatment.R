@@ -10,13 +10,10 @@
 
 # created by François Gardavaud, MPE, M.Sc. Medical imaging department - Tenon University Hopistal
 # date of creation : 01/26/2021
-# last review : 03/15/2021
+# last review : 03/31/2021
 # project lead by Pr. François Cornelis, MD, PhD. Medical imaging department - Tenon University Hopistal
 
 ###################### set-up environment section ################################
-
-# Set the project path to the root level -
-root.dir = rprojroot::find_rstudio_root_file()
 
 # load lubridate package to determine patient age from birthdate with an install condition
 if(!require(lubridate)){
@@ -47,6 +44,15 @@ if(!require(tidyverse)){
   install.packages("tidyverse")
   library(tidyverse)
 }
+
+# load rprojroot for path definition
+if(!require(rprojroot)){
+  install.packages("rprojroot")
+  library(rprojroot)
+}
+
+# Set the project path to the root level.
+root.dir = rprojroot::find_rstudio_root_file()
 
 ###############################################################################################################
 ###############################################################################################################
@@ -163,6 +169,7 @@ Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number 
                                                                  Accession.number == 30040362160 | Accession.number == 30040182895 |
                                                                  Accession.number == 30041139556 | Accession.number == 30041839654 |
                                                                  Accession.number == 30042281874 | Accession.number == 30043223051 |
+                                                                 Accession.number == 30044931878 | Patient.ID == 8015168414 |
                                                                  Patient.ID == 8002206555) 
 
 ############### Compute Exam duration #################
