@@ -10,7 +10,7 @@
 
 # created by François Gardavaud, MPE, M.Sc. Medical imaging department - Tenon University Hopistal
 # date of creation : 01/26/2021
-# last review : 03/15/2021
+# last review : 06/17/2021 - new patient inclusion
 # project lead by Pr. François Cornelis, MD, PhD. Medical imaging department - Tenon University Hopistal
 
 ###################### set-up environment section ################################
@@ -163,7 +163,15 @@ Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number 
                                                                  Accession.number == 30040362160 | Accession.number == 30040182895 |
                                                                  Accession.number == 30041139556 | Accession.number == 30041839654 |
                                                                  Accession.number == 30042281874 | Accession.number == 30043223051 |
-                                                                 Patient.ID == 8002206555) 
+                                                                 Accession.number == 30041443350 | Accession.number == 30041583485 |
+                                                                 Accession.number == 30042043640 | Accession.number == 30042727270 |
+                                                                 Accession.number == 30044367823 | Accession.number == 30045101264 |
+                                                                 Accession.number == 30046599354 | Accession.number == 30046940433 |
+                                                                 Accession.number == 30033863603 | Accession.number == 30035137214 | 
+                                                                 Accession.number == 30035188315 | Accession.number == 30037515777 |
+                                                                 Accession.number == 30038978947 | Accession.number == 30041467874 | 
+                                                                 Accession.number == 30042810133 | Accession.number == 30044931878 |
+                                                                 Accession.number == 30045798682 | Patient.ID == 8002206555 | Patient.ID == 8002951133) 
 
 ############### Compute Exam duration #################
 
