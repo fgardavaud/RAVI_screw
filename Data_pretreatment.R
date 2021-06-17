@@ -10,13 +10,14 @@
 
 # created by François Gardavaud, MPE, M.Sc. Medical imaging department - Tenon University Hopistal
 # date of creation : 01/26/2021
+<<<<<<< HEAD
 # last review : 06/17/2021 - new patient inclusion
+=======
+# last review : 03/31/2021
+>>>>>>> 85581e953f1b6a5dae2a2dc0a9189b2375d0f765
 # project lead by Pr. François Cornelis, MD, PhD. Medical imaging department - Tenon University Hopistal
 
 ###################### set-up environment section ################################
-
-# Set the project path to the root level -
-root.dir = rprojroot::find_rstudio_root_file()
 
 # load lubridate package to determine patient age from birthdate with an install condition
 if(!require(lubridate)){
@@ -47,6 +48,15 @@ if(!require(tidyverse)){
   install.packages("tidyverse")
   library(tidyverse)
 }
+
+# load rprojroot for path definition
+if(!require(rprojroot)){
+  install.packages("rprojroot")
+  library(rprojroot)
+}
+
+# Set the project path to the root level.
+root.dir = rprojroot::find_rstudio_root_file()
 
 ###############################################################################################################
 ###############################################################################################################
@@ -163,6 +173,7 @@ Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number 
                                                                  Accession.number == 30040362160 | Accession.number == 30040182895 |
                                                                  Accession.number == 30041139556 | Accession.number == 30041839654 |
                                                                  Accession.number == 30042281874 | Accession.number == 30043223051 |
+<<<<<<< HEAD
                                                                  Accession.number == 30041443350 | Accession.number == 30041583485 |
                                                                  Accession.number == 30042043640 | Accession.number == 30042727270 |
                                                                  Accession.number == 30044367823 | Accession.number == 30045101264 |
@@ -172,6 +183,10 @@ Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number 
                                                                  Accession.number == 30038978947 | Accession.number == 30041467874 | 
                                                                  Accession.number == 30042810133 | Accession.number == 30044931878 |
                                                                  Accession.number == 30045798682 | Patient.ID == 8002206555 | Patient.ID == 8002951133) 
+=======
+                                                                 Accession.number == 30044931878 | Patient.ID == 8015168414 |
+                                                                 Patient.ID == 8002206555) 
+>>>>>>> 85581e953f1b6a5dae2a2dc0a9189b2375d0f765
 
 ############### Compute Exam duration #################
 
