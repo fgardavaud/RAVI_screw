@@ -10,7 +10,7 @@
 
 # created by François Gardavaud, MPE, M.Sc. Medical imaging department - Tenon University Hopistal
 # date of creation : 01/26/2021
-# last review : 06/17/2021 - new patient inclusion
+# last review : 06/21/2021 - new patient inclusions and minor corrections and comments
 # project lead by Pr. François Cornelis, MD, PhD. Medical imaging department - Tenon University Hopistal
 
 ###################### set-up environment section ################################
@@ -167,7 +167,7 @@ Study_data_selected_exam <- Study_data_selected_age %>% filter(Accession.number 
                                                                  Accession.number == 30042043640 | Accession.number == 30042727270 |
                                                                  Accession.number == 30044367823 | Accession.number == 30045101264 |
                                                                  Accession.number == 30046599354 | Accession.number == 30046940433 |
-                                                                 Accession.number == 30033863603 | Accession.number == 30035137214 | 
+                                                                 Accession.number == 30033863603 | Accession.number == 30035137214 | Accession.number == 30034949589 |
                                                                  Accession.number == 30035188315 | Accession.number == 30037515777 |
                                                                  Accession.number == 30038978947 | Accession.number == 30041467874 | 
                                                                  Accession.number == 30042810133 | Accession.number == 30044931878 |
@@ -203,6 +203,11 @@ Study_data_selected_exam_with_duration <- merge(Study_data_selected_exam , Study
 Study_data_selected_exam_with_duration <- arrange(Study_data_selected_exam_with_duration, Accession.number, Series.Time)
 
 # Remove duplicates in order to have only one row by exam
+## /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
+# if you have several exam without accession number associated the following.
+# command line will only keep the first exam without accession number 
+#  SO YOU COULD LOST DATA INFORMATION IN Study_data_general.xlsx file
+# /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
 Study_data_selected_exam_with_duration_without_duplicates <- Study_data_selected_exam_with_duration[!duplicated(Study_data_selected_exam_with_duration$Accession.number), ] # to keep only one row for each exam time.
 # to select only row that not depends on sequence parameters
 Study_data_selected_exam_with_duration_without_duplicates <- Study_data_selected_exam_with_duration_without_duplicates %>% select(Study.date..YYYY.MM.DD., Patient.ID, Accession.number,
@@ -229,7 +234,7 @@ write.xlsx(Study_data_selected_exam_with_duration_without_duplicates, 'output/St
 # Remove dataframe which don't still have any interest
 if(exists("Patient.Age")) {
   print("Global environment will be clean")
-  rm (Patient.Age, DoseWatch_Selected_data, Study_data_selected_age, all_content, skip_content)
+ # rm (Patient.Age, DoseWatch_Selected_data, Study_data_selected_exam_duration, Study_data_selected_exam_with_duration, all_content, skip_content)
 }else{
   print("Global environment already clean")
 }
