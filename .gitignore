@@ -33,4 +33,4 @@ data/*
 ouput/*
 output
 # original script with patient data
-Data_pretreatmentment.R
+Data_pretreatment.R
